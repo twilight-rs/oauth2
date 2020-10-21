@@ -31,21 +31,6 @@ impl TokenType {
 #[cfg(test)]
 mod tests {
     use super::TokenType;
-    use serde::{Deserialize, Serialize};
-    use static_assertions::assert_impl_all;
-    use std::fmt::Debug;
-
-    assert_impl_all!(
-        TokenType: Clone,
-        Copy,
-        Debug,
-        Deserialize<'static>,
-        Eq,
-        PartialEq,
-        Send,
-        Serialize,
-        Sync
-    );
 
     #[test]
     fn test_token_types() {

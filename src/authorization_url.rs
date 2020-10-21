@@ -1,3 +1,5 @@
+//! The structures and tools needed to construct and deal with authorization urls
+
 use super::{
     client::{Client, RedirectUriInvalidError},
     Prompt, Scope,
@@ -43,7 +45,7 @@ impl ResponseType {
     }
 }
 
-#[derive(Clone, Debug)]
+/// A builder to construct an authorization url
 pub struct AuthorizationUrlBuilder<'a> {
     client: &'a Client,
     prompt: Option<Prompt>,
@@ -68,6 +70,16 @@ impl<'a> AuthorizationUrlBuilder<'a> {
         })
     }
 
+    /// Build the authorization URL into a code grant URL
+    ///
+    /// This is the standard oauth method requiring a handshake between the
+    /// server and client after the code had been granted. Please refer to the
+    /// [Discord documentation] for more information.
+    ///
+    /// For implicit grant, see [`implicit_grant`]
+    ///
+    /// [`implicit_grant`]: #method.implicit_grant
+    /// [Discord documentation]: https://discord.com/developers/docs/topics/oauth2#authorization-code-grant
     pub fn build(&self) -> String {
         self.build_with_response_type(ResponseType::Code)
     }
@@ -188,7 +200,11 @@ impl<'a> AuthorizationUrlBuilder<'a> {
     }
 }
 
-#[derive(Clone, Debug)]
+/// A builder to construct a bot authorization url.
+///
+/// See [Discord's Bot Authorization Flow] for more info
+///
+/// [Discord's Bot Authorization Flow]: https://discord.com/developers/docs/topics/oauth2#bot-authorization-flow
 pub struct BotAuthorizationUrlBuilder<'a> {
     client: &'a Client,
     disable_guild_select: Option<bool>,
@@ -333,28 +349,11 @@ impl<'a> BotAuthorizationUrlBuilder<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::{AuthorizationUrlBuilder, BotAuthorizationUrlBuilder, Client, ResponseType, Scope};
-    use serde::{Deserialize, Serialize};
-    use static_assertions::assert_impl_all;
-    use std::fmt::Debug;
+    use super::{Client, Scope};
     use twilight_model::{
         guild::Permissions,
         id::{ApplicationId, GuildId},
     };
-
-    assert_impl_all!(AuthorizationUrlBuilder<'_>: Clone, Debug, Send, Sync);
-    assert_impl_all!(BotAuthorizationUrlBuilder<'_>: Clone, Debug, Send, Sync);
-    assert_impl_all!(
-        ResponseType: Clone,
-        Copy,
-        Debug,
-        Deserialize<'static>,
-        Eq,
-        PartialEq,
-        Serialize,
-        Send,
-        Sync
-    );
 
     #[test]
     fn test_bot_authorization_url() {

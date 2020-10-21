@@ -1,11 +1,22 @@
+//! Create requests and parse responses when exchanging refreshing a token.
+//!
+//! Refer to [Discord's documentation] for additional information.
+//!
+//! [Discord's documentation]: https://discord.com/developers/docs/topics/oauth2#authorization-code-grant-access-token-response
+
 use super::super::{
     scope::{self, Scope},
     Client, GrantType, TokenType,
 };
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use std::fmt::Write;
 use twilight_model::id::ApplicationId;
 
+/// The body for the refresh token exchange request.
+///
+/// This body is used in the [`RefreshTokenExchangeRequest`]
+///
+/// [`RefreshTokenExchangeRequest`]: struct.RefreshTokenExchangeRequest.html
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 #[non_exhaustive]
 pub struct RefreshTokenExchangeRequestBody<'a> {
@@ -25,6 +36,13 @@ pub struct RefreshTokenExchangeRequestBody<'a> {
     pub scope: String,
 }
 
+/// The request for the refresh token exchange.
+///
+/// You can construct this request from a client using the [`Client::refresh_token_exchange`] method
+/// which will return a [`RefreshTokenExchangeResponse`]
+///
+/// [`Client::refresh_token_exchange`]: ../../client/struct.Client.html#method.refresh_token_exchange
+/// [`RefreshTokenExchangeResponse`]: struct.RefreshTokenExchangeResponse.html
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 #[non_exhaustive]
 pub struct RefreshTokenExchangeRequest<'a> {
@@ -64,7 +82,10 @@ impl RefreshTokenExchangeRequest<'_> {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+/// The response body from a [`RefreshTokenExchangeRequest`]
+///
+/// [`RefreshTokenExchangeRequest`]: struct.RefreshTokenExchangeRequest.html
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 #[non_exhaustive]
 pub struct RefreshTokenExchangeResponse {
     /// Access token to be used when making requests to the API on the user's
@@ -88,7 +109,13 @@ pub struct RefreshTokenExchangeResponse {
     pub token_type: TokenType,
 }
 
-#[derive(Clone, Debug)]
+/// A builder to construct an [`RefreshTokenExchangeRequest`]
+///
+/// This builder is created from the client using the [`Client::refresh_token_exchange`]
+/// method.
+///
+/// [`Client::refresh_token_exchange`]: ../../client/struct.Client.html#method.refresh_token_exchange
+/// [`RefreshTokenExchangeRequest`]: struct.RefreshTokenExchangeRequest.html
 pub struct RefreshTokenExchangeBuilder<'a> {
     client: &'a Client,
     refresh_token: &'a str,
@@ -106,6 +133,9 @@ impl<'a> RefreshTokenExchangeBuilder<'a> {
         }
     }
 
+    /// Create an [`RefreshTokenExchangeRequest`] configured from this builder
+    ///
+    /// [`RefreshTokenExchangeRequest`]: struct.RefreshTokenExchangeRequest.html
     pub fn build(&'a self) -> RefreshTokenExchangeRequest<'a> {
         RefreshTokenExchangeRequest {
             body: RefreshTokenExchangeRequestBody {
@@ -126,6 +156,16 @@ impl<'a> RefreshTokenExchangeBuilder<'a> {
         }
     }
 
+    /// Set the scopes for the client credentials grant request.
+    ///
+    /// By default no scopes are selected
+    ///
+    /// Read about Discord's [scope documentation].
+    ///
+    /// [RFC 6749 § 3.3] on access token scopes.
+    ///
+    /// [RFC 6749 § 3.3]: https://tools.ietf.org/html/rfc6749#section-3.3
+    /// [scope documentation]: https://discord.com/developers/docs/topics/oauth2#shared-resources-oauth2-scopes
     pub fn scopes(&mut self, scopes: &'a [Scope]) -> &mut Self {
         self.scopes.replace(scopes);
 
@@ -135,37 +175,8 @@ impl<'a> RefreshTokenExchangeBuilder<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        Client, GrantType, RefreshTokenExchangeBuilder, RefreshTokenExchangeRequest,
-        RefreshTokenExchangeRequestBody, RefreshTokenExchangeResponse, Scope,
-    };
-    use serde::{Deserialize, Serialize};
-    use static_assertions::{assert_fields, assert_impl_all};
-    use std::fmt::Debug;
+    use super::{Client, GrantType, RefreshTokenExchangeRequestBody, Scope};
     use twilight_model::id::ApplicationId;
-
-    assert_fields!(RefreshTokenExchangeRequestBody<'_>: client_id, client_secret, grant_type, redirect_uri, refresh_token, scope);
-    assert_fields!(RefreshTokenExchangeRequest<'_>: body, headers, url_base);
-    assert_fields!(
-        RefreshTokenExchangeResponse: access_token,
-        expires_in,
-        refresh_token,
-        scope,
-        token_type
-    );
-    assert_impl_all!(RefreshTokenExchangeBuilder<'_>: Clone, Debug, Send, Sync);
-    assert_impl_all!(RefreshTokenExchangeRequestBody<'_>: Clone, Debug, Eq, PartialEq, Send, Serialize, Sync);
-    assert_impl_all!(RefreshTokenExchangeRequest<'_>: Clone, Debug, Eq, PartialEq, Send, Serialize, Sync);
-    assert_impl_all!(
-        RefreshTokenExchangeResponse: Clone,
-        Debug,
-        Deserialize<'static>,
-        Eq,
-        PartialEq,
-        Send,
-        Serialize,
-        Sync
-    );
 
     #[test]
     fn test_refresh_token_exchange_request() {

@@ -1,3 +1,6 @@
+//! Structures and tools used for handling an oauth client and creating requests
+//! to act on its behalf
+
 use super::{
     authorization_url::{AuthorizationUrlBuilder, BotAuthorizationUrlBuilder},
     request::{
@@ -48,6 +51,9 @@ impl Error for CreateClientError<'_> {
     }
 }
 
+/// Creating an authorization url failed due to an issue with the redirect uri
+///
+/// This is returned from any function that takes in a redirect uri
 #[derive(Clone, Debug, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum RedirectUriInvalidError<'a> {
@@ -66,27 +72,7 @@ pub enum RedirectUriInvalidError<'a> {
     },
 }
 
-impl Display for RedirectUriInvalidError<'_> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        match self {
-            Self::Invalid { source, .. } => Display::fmt(source, f),
-            Self::Unconfigured { uri } => f.write_fmt(format_args!(
-                "the provided uri ('{}') is not configured in the client",
-                uri,
-            )),
-        }
-    }
-}
-
-impl Error for RedirectUriInvalidError<'_> {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        match self {
-            Self::Invalid { source, .. } => Some(source),
-            Self::Unconfigured { .. } => None,
-        }
-    }
-}
-
+/// An oauth client
 #[derive(Clone, Debug)]
 pub struct Client {
     client_id: ApplicationId,
@@ -177,10 +163,20 @@ impl Client {
         AuthorizationUrlBuilder::new(self, redirect_uri)
     }
 
+    /// Create an access token exchange request given a code from the initial oauth response
+    ///
+    /// See [Discord's example] for more information
+    ///
+    /// [Discord's example]: https://discord.com/developers/docs/topics/oauth2#authorization-code-grant-redirect-url-example
     pub fn access_token_exchange<'a>(&'a self, code: &'a str) -> AccessTokenExchangeBuilder<'a> {
         AccessTokenExchangeBuilder::new(self, code)
     }
 
+    /// Create a refresh token exchange request given the user's refresh token
+    ///
+    /// See [Discord's documentation] for more information
+    ///
+    /// [Discord's documentation]: https://discord.com/developers/docs/topics/oauth2#authorization-code-grant-access-token-response
     pub fn refresh_token_exchange<'a>(
         &'a self,
         refresh_token: &'a str,
@@ -230,21 +226,9 @@ impl Client {
 
 #[cfg(test)]
 mod tests {
-    use super::{Client, CreateClientError, RedirectUriInvalidError};
-    use static_assertions::{assert_fields, assert_impl_all};
-    use std::{
-        error::Error,
-        fmt::{Debug, Display},
-    };
+    use super::{Client, CreateClientError};
     use twilight_model::id::ApplicationId;
     use url::ParseError;
-
-    assert_impl_all!(Client: Clone, Debug, Send, Sync);
-    assert_fields!(CreateClientError::RedirectUriInvalid: source, uri);
-    assert_impl_all!(CreateClientError<'_>: Clone, Debug, Display, Eq, Error, PartialEq, Send, Sync);
-    assert_fields!(RedirectUriInvalidError::Invalid: source, uri);
-    assert_fields!(RedirectUriInvalidError::Unconfigured: uri);
-    assert_impl_all!(RedirectUriInvalidError<'_>: Clone, Debug, Display, Eq, Error, PartialEq, Send, Sync);
 
     #[test]
     fn test_client_create() {

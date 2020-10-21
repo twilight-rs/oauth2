@@ -1,3 +1,9 @@
+//! Create requests and parse responses when exchaging an access token.
+//!
+//! Refer to [Discord's documentation] for additional information.
+//!
+//! [Discord's documentation]: https://discord.com/developers/docs/topics/oauth2#authorization-code-grant
+
 use super::super::{
     scope::{self, Scope},
     Client, GrantType, TokenType,
@@ -6,6 +12,11 @@ use serde::{Deserialize, Serialize};
 use std::fmt::Write;
 use twilight_model::{channel::Webhook, id::ApplicationId};
 
+/// The body for the access token exchange request.
+///
+/// This body is used in the [`AccessTokenExchangeRequest`]
+///
+/// [`AccessTokenExchangeRequest`]: struct.AccessTokenExchangeRequest.html
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 #[non_exhaustive]
 pub struct AccessTokenExchangeRequestBody<'a> {
@@ -25,6 +36,13 @@ pub struct AccessTokenExchangeRequestBody<'a> {
     pub scope: String,
 }
 
+/// The request for the access token exchange flow.
+///
+/// You can construct this request from a client using the [`Client::access_token_exchange`] method
+/// which will return a [`AccessTokenExchangeBuilder`]
+///
+/// [`Client::access_token_exchange`]: ../../client/struct.Client.html#method.access_token_exchange
+/// [`AccessTokenExchangeBuilder`]: struct.AccessTokenExchangeBuilder.html
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 #[non_exhaustive]
 pub struct AccessTokenExchangeRequest<'a> {
@@ -60,6 +78,9 @@ impl AccessTokenExchangeRequest<'_> {
     }
 }
 
+/// The response body from an [`AccessTokenExchangeRequest`]
+///
+/// [`AccessTokenExchangeRequest`]: struct.AccessTokenExchangeRequest.html
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[non_exhaustive]
 pub struct AccessTokenExchangeResponse {
@@ -91,7 +112,13 @@ pub struct AccessTokenExchangeResponse {
     pub webhook: Option<Webhook>,
 }
 
-#[derive(Clone, Debug)]
+/// A builder to construct an [`AccessTokenExchangeRequest`]
+///
+/// This builder is created from the client using the [`Client::access_token_exchange`]
+/// method.
+///
+/// [`Client::access_token_exchange`]: ../../client/struct.Client.html#method.access_token_exchange
+/// [`AccessTokenExchangeRequest`]: struct.AccessTokenExchangeRequest.html
 pub struct AccessTokenExchangeBuilder<'a> {
     client: &'a Client,
     code: &'a str,
@@ -109,6 +136,9 @@ impl<'a> AccessTokenExchangeBuilder<'a> {
         }
     }
 
+    /// Create an [`AccessTokenExchangeRequest`] configured from this builder
+    ///
+    /// [`AccessTokenExchangeRequest`]: struct.AccessTokenExchangeRequest.html
     pub fn build(&'a self) -> AccessTokenExchangeRequest<'a> {
         let scope = self.scopes.map(scope::join).unwrap_or_default();
 
@@ -151,43 +181,13 @@ impl<'a> AccessTokenExchangeBuilder<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        AccessTokenExchangeBuilder, AccessTokenExchangeRequest, AccessTokenExchangeRequestBody,
-        AccessTokenExchangeResponse,
-    };
+    use super::AccessTokenExchangeResponse;
     use crate::TokenType;
-    use serde::{Deserialize, Serialize};
     use serde_test::Token;
-    use static_assertions::{assert_fields, assert_impl_all};
-    use std::fmt::Debug;
     use twilight_model::{
         channel::{Webhook, WebhookType},
         id::{ChannelId, GuildId, WebhookId},
     };
-
-    assert_fields!(AccessTokenExchangeRequestBody<'_>: client_id, client_secret, code, grant_type, redirect_uri, scope);
-    assert_fields!(AccessTokenExchangeRequest<'_>: body, headers, url_base);
-    assert_fields!(
-        AccessTokenExchangeResponse: access_token,
-        expires_in,
-        refresh_token,
-        scope,
-        token_type,
-        webhook
-    );
-    assert_impl_all!(AccessTokenExchangeBuilder<'_>: Clone, Debug, Send, Sync);
-    assert_impl_all!(AccessTokenExchangeRequestBody<'_>: Clone, Debug, Eq, PartialEq, Send, Serialize, Sync);
-    assert_impl_all!(AccessTokenExchangeRequest<'_>: Clone, Debug, Eq, PartialEq, Send, Serialize, Sync);
-    assert_impl_all!(
-        AccessTokenExchangeResponse: Clone,
-        Debug,
-        Deserialize<'static>,
-        Eq,
-        PartialEq,
-        Send,
-        Serialize,
-        Sync
-    );
 
     #[test]
     fn test_response_webhook() {

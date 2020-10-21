@@ -1,10 +1,21 @@
+//! Create requests and parse responses when granting client credentials.
+//!
+//! Refer to [Discord's documentation] for additional information.
+//!
+//! [Discord's documentation]: https://discord.com/developers/docs/topics/oauth2#client-credentials-grant
+
 use super::super::{
     scope::{self, Scope},
     Client, GrantType, TokenType,
 };
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use twilight_model::id::ApplicationId;
 
+/// The body for the client credentials grant request.
+///
+/// This body is used in the [`ClientCredentialsGrantRequest`]
+///
+/// [`ClientCredentialsGrantRequest`]: struct.ClientCredentialsGrantRequest.html
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 #[non_exhaustive]
 pub struct ClientCredentialsGrantRequestBody<'a> {
@@ -20,6 +31,13 @@ pub struct ClientCredentialsGrantRequestBody<'a> {
     pub scope: String,
 }
 
+/// The request for the client credentials grant flow.
+///
+/// You can construct this request from a client using the [`Client::client_credentials_grant`] method
+/// which will return a [`ClientCredentialsGrantBuilder`]
+///
+/// [`Client::client_credentials_grant`]: ../../client/struct.Client.html#method.client_credentials_grant
+/// [`ClientCredentialsGrantBuilder`]: struct.ClientCredentialsGrantBuilder.html
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 #[non_exhaustive]
 pub struct ClientCredentialsGrantRequest<'a> {
@@ -56,7 +74,10 @@ impl ClientCredentialsGrantRequest<'_> {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+/// The response body from a [`ClientCredentialsGrantRequest`]
+///
+/// [`ClientCredentialsGrantRequest`]: struct.ClientCredentialsGrantRequest.html
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 #[non_exhaustive]
 pub struct ClientCredentialsGrantResponse {
     /// Access token to be used when making requests to the API on the user's
@@ -102,7 +123,6 @@ pub struct ClientCredentialsGrantResponse {
 /// println!("grant url: {}", request.url());
 /// # Ok(()) }
 /// ```
-#[derive(Clone, Debug)]
 pub struct ClientCredentialsGrantBuilder<'a> {
     client: &'a Client,
     scopes: &'a [Scope],
@@ -153,36 +173,8 @@ impl<'a> ClientCredentialsGrantBuilder<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        Client, ClientCredentialsGrantBuilder, ClientCredentialsGrantRequest,
-        ClientCredentialsGrantRequestBody, ClientCredentialsGrantResponse, GrantType, Scope,
-    };
-    use serde::{Deserialize, Serialize};
-    use static_assertions::{assert_fields, assert_impl_all};
-    use std::fmt::Debug;
+    use super::{Client, ClientCredentialsGrantRequestBody, GrantType, Scope};
     use twilight_model::id::ApplicationId;
-
-    assert_fields!(ClientCredentialsGrantRequestBody<'_>: client_id, client_secret, grant_type, scope);
-    assert_fields!(ClientCredentialsGrantRequest<'_>: body, headers, url_base);
-    assert_fields!(
-        ClientCredentialsGrantResponse: access_token,
-        expires_in,
-        token_type,
-        scope
-    );
-    assert_impl_all!(ClientCredentialsGrantBuilder<'_>: Clone, Debug, Send, Sync);
-    assert_impl_all!(ClientCredentialsGrantRequestBody<'_>: Clone, Debug, Eq, PartialEq, Send, Serialize, Sync);
-    assert_impl_all!(ClientCredentialsGrantRequest<'_>: Clone, Debug, Eq, PartialEq, Send, Serialize, Sync);
-    assert_impl_all!(
-        ClientCredentialsGrantResponse: Clone,
-        Debug,
-        Deserialize<'static>,
-        Eq,
-        PartialEq,
-        Send,
-        Serialize,
-        Sync
-    );
 
     #[test]
     fn test_client_credentials_grant_request() {

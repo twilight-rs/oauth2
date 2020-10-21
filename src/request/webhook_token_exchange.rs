@@ -1,4 +1,4 @@
-//! Create requests and parse responses when exchanging an authorization code.
+//! Create requests and parse responses when exchanging a webhook token.
 //!
 //! This requires that the authorization scope was set to [`WebhookIncoming`].
 //! Refer to [Discord's documentation] for additional information.
@@ -10,6 +10,11 @@ use super::{super::TokenType, access_token_exchange::AccessTokenExchangeRequest}
 use serde::{Deserialize, Serialize};
 use twilight_model::channel::Webhook;
 
+/// The request for the webhook token exchange.
+///
+/// This is the same as the [`AccessTokenExchangeRequest`]
+///
+/// [`AccessTokenExchangeRequest`]: ../access_token_exchange/struct.AccessTokenExchangeRequest.html
 pub type WebhookTokenExchangeRequest<'a> = AccessTokenExchangeRequest<'a>;
 
 /// Response from exchange an authorization code when the [`WebhookIncoming`]
@@ -42,31 +47,4 @@ pub struct WebhookTokenExchangeResponse {
     pub token_type: TokenType,
     /// Webhook that the user created via authorization.
     pub webhook: Webhook,
-}
-
-#[cfg(test)]
-mod tests {
-    use super::WebhookTokenExchangeResponse;
-    use serde::{Deserialize, Serialize};
-    use static_assertions::{assert_fields, assert_impl_all};
-    use std::fmt::Debug;
-
-    assert_fields!(
-        WebhookTokenExchangeResponse: access_token,
-        expires_in,
-        refresh_token,
-        scope,
-        token_type,
-        webhook
-    );
-    assert_impl_all!(
-        WebhookTokenExchangeResponse: Clone,
-        Debug,
-        Deserialize<'static>,
-        Eq,
-        PartialEq,
-        Send,
-        Serialize,
-        Sync
-    );
 }

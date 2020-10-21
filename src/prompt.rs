@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use std::fmt::{Display, Formatter, Result as FmtResult};
 
 /// Whether to prompt the user again when they have already authorized the
 /// application.
@@ -33,37 +32,13 @@ impl Prompt {
     }
 }
 
-impl Display for Prompt {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        f.write_str(self.name())
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::Prompt;
-    use serde::{Deserialize, Serialize};
-    use static_assertions::assert_impl_all;
-    use std::fmt::{Debug, Display};
-
-    assert_impl_all!(
-        Prompt: Clone,
-        Copy,
-        Debug,
-        Deserialize<'static>,
-        Display,
-        Eq,
-        PartialEq,
-        Send,
-        Serialize,
-        Sync
-    );
 
     #[test]
     fn test_prompts() {
         assert_eq!("consent", Prompt::Consent.name());
-        assert_eq!("consent", Prompt::Consent.to_string());
         assert_eq!("none", Prompt::None.name());
-        assert_eq!("none", Prompt::None.to_string());
     }
 }

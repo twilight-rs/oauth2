@@ -137,21 +137,6 @@ pub fn join(scopes: &[Scope]) -> String {
 #[cfg(test)]
 mod tests {
     use super::Scope;
-    use serde::{Deserialize, Serialize};
-    use static_assertions::assert_impl_all;
-    use std::fmt::Debug;
-
-    assert_impl_all!(
-        Scope: Clone,
-        Copy,
-        Debug,
-        Deserialize<'static>,
-        Eq,
-        PartialEq,
-        Send,
-        Serialize,
-        Sync
-    );
 
     #[test]
     fn test_join() {
