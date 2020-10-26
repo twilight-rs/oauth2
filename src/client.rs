@@ -177,8 +177,12 @@ impl Client {
         AuthorizationUrlBuilder::new(self, redirect_uri)
     }
 
-    pub fn access_token_exchange<'a>(&'a self, code: &'a str) -> AccessTokenExchangeBuilder<'a> {
-        AccessTokenExchangeBuilder::new(self, code)
+    pub fn access_token_exchange<'a>(
+        &'a self,
+        code: &'a str,
+        redirect_uri: &'a str,
+    ) -> Result<AccessTokenExchangeBuilder<'a>, RedirectUriInvalidError<'a>> {
+        AccessTokenExchangeBuilder::new(self, code, redirect_uri)
     }
 
     pub fn refresh_token_exchange<'a>(
