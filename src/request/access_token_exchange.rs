@@ -1,8 +1,11 @@
+use crate::client::RedirectUriInvalidError;
+
 use super::super::{
     scope::{self, Scope},
     Client, GrantType, TokenType,
 };
 use serde::{Deserialize, Serialize};
+use url::Url;
 use std::fmt::Write;
 use twilight_model::{channel::Webhook, id::ApplicationId};
 
@@ -52,7 +55,7 @@ impl AccessTokenExchangeRequest<'_> {
         buf.push_str("&code=");
         buf.push_str(self.body.code);
         buf.push_str("&redirect_uri=");
-        buf.push_str(self.body.redirect_uri);
+        buf.push_str(&urlencoding::encode(self.body.redirect_uri));
         buf.push_str("&scope=");
         buf.push_str(&urlencoding::encode(&self.body.scope));
 
@@ -95,18 +98,22 @@ pub struct AccessTokenExchangeResponse {
 pub struct AccessTokenExchangeBuilder<'a> {
     client: &'a Client,
     code: &'a str,
+    redirect_uri: &'a Url,
     scopes: Option<&'a [Scope]>,
 }
 
 impl<'a> AccessTokenExchangeBuilder<'a> {
     const BASE_URL: &'static str = "https://discord.com/api/v6/oauth2/token";
 
-    pub(crate) fn new(client: &'a Client, code: &'a str) -> Self {
-        Self {
+    pub(crate) fn new(client: &'a Client, code: &'a str, redirect_uri: &'a str) -> Result<Self, RedirectUriInvalidError<'a>> {
+        let redirect_uri = client.redirect_uri(redirect_uri)?;
+
+        Ok(Self {
             client,
             code,
+            redirect_uri,
             scopes: None,
-        }
+        })
     }
 
     pub fn build(&'a self) -> AccessTokenExchangeRequest<'a> {
@@ -118,12 +125,7 @@ impl<'a> AccessTokenExchangeBuilder<'a> {
                 client_secret: self.client.client_secret(),
                 code: self.code,
                 grant_type: GrantType::AuthorizationCode,
-                redirect_uri: self
-                    .client
-                    .redirect_uris()
-                    .first()
-                    .expect("redirect uri must be configured")
-                    .as_ref(),
+                redirect_uri: self.redirect_uri.as_ref(),
                 scope,
             },
             headers: &[("Content-Type", "application/x-www-form-urlencoded")],
