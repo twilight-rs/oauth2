@@ -14,7 +14,7 @@ version = "0.1.0"
 
 [dependencies]
 serde = { default-features = false, features = ["derive"], version = "1" }
-twilight-model = { default-features = false, version = "0.1" }
+twilight-model = { default-features = false, version = "0.2" }
 urlencoding = { default-features = false, version = "1" }
 url = { default-features = false, version = "2" }
 
