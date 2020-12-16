@@ -23,6 +23,12 @@ pub enum Scope {
     /// This is only available to allowlisted applications.
     #[serde(rename = "applications.builds.upload")]
     ApplicationsBuildsUpload,
+    /// Create slash commands in a guild.
+    #[serde(rename = "applications.commands")]
+    ApplicationsCommands,
+    /// Update slash commands in a guild.
+    #[serde(rename = "applications.commands.update")]
+    ApplicationsCommandsUpdate,
     /// Read entitlements for a user's applications.
     #[serde(rename = "applications.entitlements")]
     ApplicationsEntitlements,
@@ -99,6 +105,8 @@ impl Scope {
             Self::ActivitiesWrite => "activities.write",
             Self::ApplicationsBuildsRead => "applications.builds.read",
             Self::ApplicationsBuildsUpload => "applications.builds.upload",
+            Self::ApplicationsCommands => "applications.commands",
+            Self::ApplicationsCommandsUpdate => "applications.commands.update",
             Self::ApplicationsEntitlements => "applications.entitlements",
             Self::ApplicationsStoreUpdate => "applications.store.update",
             Self::Bot => "bot",
@@ -171,6 +179,11 @@ mod tests {
         assert_eq!(
             "applications.builds.upload",
             Scope::ApplicationsBuildsUpload.name()
+        );
+        assert_eq!("applications.commands", Scope::ApplicationsCommands.name());
+        assert_eq!(
+            "applications.commands.update",
+            Scope::ApplicationsCommandsUpdate.name()
         );
         assert_eq!(
             "applications.entitlements",
