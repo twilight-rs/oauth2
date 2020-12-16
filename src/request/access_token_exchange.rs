@@ -5,9 +5,9 @@ use super::super::{
     Client, GrantType, TokenType,
 };
 use serde::{Deserialize, Serialize};
-use url::Url;
 use std::fmt::Write;
 use twilight_model::{channel::Webhook, id::ApplicationId};
+use url::Url;
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 #[non_exhaustive]
@@ -105,7 +105,11 @@ pub struct AccessTokenExchangeBuilder<'a> {
 impl<'a> AccessTokenExchangeBuilder<'a> {
     const BASE_URL: &'static str = "https://discord.com/api/v6/oauth2/token";
 
-    pub(crate) fn new(client: &'a Client, code: &'a str, redirect_uri: &'a str) -> Result<Self, RedirectUriInvalidError<'a>> {
+    pub(crate) fn new(
+        client: &'a Client,
+        code: &'a str,
+        redirect_uri: &'a str,
+    ) -> Result<Self, RedirectUriInvalidError<'a>> {
         let redirect_uri = client.redirect_uri(redirect_uri)?;
 
         Ok(Self {
